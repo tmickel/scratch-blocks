@@ -347,6 +347,17 @@ Blockly.Field.prototype.setText = function(text) {
   if (this.sourceBlock_ && this.sourceBlock_.rendered) {
     this.sourceBlock_.render();
     this.sourceBlock_.bumpNeighbours_();
+
+    // Update text element X based on the new size.
+    // Position is relative to horizontal start of source block.
+    if (this.textElement_) {
+      var size = this.sourceBlock_.getHeightWidth();
+      var centerX = (this.sourceBlock_.RTL) ? -size.width / 2 : size.width / 2;
+      // Offset by offset of fieldGroup_
+      // @todo: Why is this necessary, and different in horizontal/vertical
+      centerX -= Blockly.getRelativeXY_(this.fieldGroup_).x;
+      this.textElement_.setAttribute('x', centerX);
+    }
   }
 };
 
