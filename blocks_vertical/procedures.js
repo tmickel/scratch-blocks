@@ -216,3 +216,103 @@ Blockly.Blocks['procedures_param'] = {
     }
   }
 };
+
+Blockly.Blocks['procedures_report'] = {
+  init: function() {
+    this.jsonInit({
+      "message0": "report %1",
+      "args0": [
+        {
+          "type": "input_value",
+          "name": "VALUE"
+        }
+      ],
+      "inputsInline": true,
+      "previousStatement": null,
+      "category": Blockly.Categories.more,
+      "colour": Blockly.Colours.more.primary,
+      "colourSecondary": Blockly.Colours.more.secondary,
+      "colourTertiary": Blockly.Colours.more.tertiary
+    });
+  }
+};
+
+Blockly.Blocks['procedures_callreturn'] = {
+  init: function() {
+    this.setPreviousStatement(false);
+    this.setNextStatement(false);
+    this.setOutput('String');
+    this.setOutputShape(Blockly.OUTPUT_SHAPE_ROUND);
+    this.setCategory(Blockly.Categories.more);
+    this.setColour(Blockly.Colours.more.primary,
+      Blockly.Colours.more.secondary,
+      Blockly.Colours.more.tertiary);
+    this._procCode = 'proccode';
+    var blockInstance = this;
+    this.appendDummyInput()
+        .appendField(new Blockly.FieldTextInput('proccode', function(v) {
+          blockInstance._procCode = v;
+          var newMutation = Blockly.Xml.domToText(blockInstance.mutationToDom());
+          Blockly.Events.fire(new Blockly.Events.Change(
+              blockInstance, 'mutation', null, null, newMutation));
+        }));
+  },
+  /**
+   * Create XML to represent the (non-editable) name and arguments.
+   * @return {!Element} XML storage element.
+   * @this Blockly.Block
+   */
+  mutationToDom: function() {
+    var container = document.createElement('mutation');
+    container.setAttribute('proccode', this._procCode);
+    return container;
+  },
+  /**
+   * Parse XML to restore the (non-editable) name and parameters.
+   * @param {!Element} xmlElement XML storage element.
+   * @this Blockly.Block
+   */
+  domToMutation: function(xmlElement) {
+    this._procCode = xmlElement.getAttribute('proccode');
+    this._updateDisplay();
+  },
+  _updateDisplay: function() {
+    // Split the proc into components, by %n, %b, and %s (ignoring escaped).
+    var procComponents = this._procCode.split(/(?=[^\\]\%[nbs])/);
+    procComponents = procComponents.map(function(c) {
+      return c.trim(); // Strip whitespace.
+    });
+    // Create inputs and shadow blocks as appropriate.
+    var inputPrefix = 'input';
+    var inputCount = 0;
+    for (var i = 0, component; component = procComponents[i]; i++) {
+      var newLabel;
+      if (component.substring(0, 1) == '%') {
+        var inputType = component.substring(1, 2);
+        newLabel = component.substring(2).trim();
+        var inputName = inputPrefix + (inputCount++);
+        switch (inputType) {
+          case 'n':
+            var input = this.appendValueInput(inputName);
+            var num = this.workspace.newBlock('math_number');
+            num.setShadow(true);
+            num.outputConnection.connect(input.connection);
+            break;
+          case 'b':
+            var input = this.appendValueInput(inputName);
+            input.setCheck('Boolean');
+            break;
+          case 's':
+            var input = this.appendValueInput(inputName);
+            var text = this.workspace.newBlock('text');
+            text.setShadow(true);
+            text.outputConnection.connect(input.connection);
+            break;
+        }
+      } else {
+        newLabel = component.trim();
+      }
+      this.appendDummyInput().appendField(newLabel.replace(/\\%/, '%'));
+    }
+  }
+};

@@ -755,5 +755,10 @@ Blockly.Blocks.defaultToolbox = '<xml id="toolbox-categories" style="display: no
       '</value>'+
     '</block>'+
   '</category>'+
-  '<category name="More Blocks" colour="#FF6680" secondaryColour="#FF3355" custom="PROCEDURE"></category>'+
+  '<category name="More Blocks" colour="#FF6680" secondaryColour="#FF3355">' +
+    '<block type="procedures_report">' +
+      '<value name="VALUE"><shadow type="text"><field name="TEXT"></field></shadow></value>' +
+    '</block>' +
+    '<block type="procedures_callreturn"></block>' +
+  '</category>'+
   '</xml>';
